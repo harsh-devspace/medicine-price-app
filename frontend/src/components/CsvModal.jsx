@@ -10,7 +10,8 @@ const CsvModal = ({ open, onClose, onRefresh }) => {
   const [uploading, setUploading] = useState(false);
 
   const handleExportCsv = () => {
-    window.location.href = '/api/export/csv';
+    const apiBase = axios.defaults.baseURL || import.meta.env.VITE_API_URL || 'https://medicine-price-app.onrender.com';
+    window.location.href = `${apiBase}/api/export/csv`;
     message.success('Exporting CSV database file...');
   };
 
