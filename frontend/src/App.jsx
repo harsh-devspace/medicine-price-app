@@ -280,6 +280,7 @@ const App = () => {
 
           <div className="tab-actions-buttons">
             <Button
+              className="py-3 sm:py-1.5"
               icon={<FileExcelOutlined style={{ color: '#16a34a' }} />}
               onClick={() => setCsvModalOpen(true)}
             >
@@ -287,6 +288,7 @@ const App = () => {
             </Button>
             <Button
               type="primary"
+              className="py-3 sm:py-1.5"
               icon={<PlusOutlined />}
               onClick={() => {
                 setEditingMedicine(null);

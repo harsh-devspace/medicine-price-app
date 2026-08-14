@@ -309,6 +309,12 @@ body {
   .tab-actions-buttons > * {
     flex: 1;
   }
+
+  .tab-actions-buttons .ant-btn {
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+    height: auto !important;
+  }
 }
 
 @media (max-width: 480px) {
