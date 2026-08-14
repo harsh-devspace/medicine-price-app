@@ -8,6 +8,7 @@ const DuplicateWarningModal = ({ open, onCancel, onConfirmUpdate, duplicateInfo 
   if (!duplicateInfo) return null;
 
   const { existingRecord, newValues } = duplicateInfo;
+  const modalWidth = typeof window !== 'undefined' ? Math.min(520, window.innerWidth - 24) : 520;
 
   return (
     <Modal
@@ -16,24 +17,25 @@ const DuplicateWarningModal = ({ open, onCancel, onConfirmUpdate, duplicateInfo 
       footer={null}
       title={
         <Space style={{ color: '#d97706' }}>
-          <WarningFilled style={{ fontSize: '1.4rem' }} />
-          <Title level={4} style={{ margin: 0, color: '#b45309' }}>
+          <WarningFilled style={{ fontSize: '1.25rem' }} />
+          <Title level={4} style={{ margin: 0, color: '#b45309', fontSize: '1.05rem' }}>
             Duplicate Entry Detected
           </Title>
         </Space>
       }
-      width={520}
+      width={modalWidth}
+      style={{ top: 20 }}
     >
       <Alert
         type="warning"
         message={
-          <span>
+          <span style={{ fontSize: '0.85rem' }}>
             An entry for <strong>{newValues.product_name}</strong> from agency{' '}
             <strong>{newValues.agency}</strong> already exists in your database.
           </span>
         }
         showIcon
-        style={{ marginBottom: '1.25rem', marginTop: '0.75rem' }}
+        style={{ marginBottom: '1rem', marginTop: '0.5rem' }}
       />
 
       <Descriptions title="Price Comparison Breakdown" bordered size="small" column={1}>
@@ -44,15 +46,15 @@ const DuplicateWarningModal = ({ open, onCancel, onConfirmUpdate, duplicateInfo 
           <Text type="secondary"> (MRP: ₹{existingRecord.mrp.toFixed(2)})</Text>
         </Descriptions.Item>
         <Descriptions.Item label="New Proposed PTR">
-          <Text strong style={{ color: '#0d9488', fontSize: '1.05rem' }}>
+          <Text strong style={{ color: '#0d9488', fontSize: '1rem' }}>
             ₹{parseFloat(newValues.ptr).toFixed(2)}
           </Text>
           <Text type="secondary"> (MRP: ₹{parseFloat(newValues.mrp).toFixed(2)})</Text>
         </Descriptions.Item>
       </Descriptions>
 
-      <div style={{ marginTop: '1.5rem', textAlign: 'right' }}>
-        <Space>
+      <div style={{ marginTop: '1.25rem', textAlign: 'right' }}>
+        <Space wrap>
           <Button onClick={onCancel}>Cancel</Button>
           <Button
             type="primary"

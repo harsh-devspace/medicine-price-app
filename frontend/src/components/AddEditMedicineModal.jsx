@@ -32,11 +32,13 @@ const AddEditMedicineModal = ({ open, onClose, onSubmit, medicine, loading, agen
       ? (((mrpValue - ptrValue) / mrpValue) * 100).toFixed(1)
       : null;
 
+  const modalWidth = typeof window !== 'undefined' ? Math.min(540, window.innerWidth - 24) : 540;
+
   return (
     <Modal
       title={
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0d9488' }}>
-          <MedicineBoxOutlined style={{ fontSize: '1.25rem' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0d9488', fontSize: '1.05rem' }}>
+          <MedicineBoxOutlined style={{ fontSize: '1.2rem' }} />
           <span>{medicine ? 'Edit Medicine Price Entry' : 'Add New Medicine Record'}</span>
         </div>
       }
@@ -49,14 +51,15 @@ const AddEditMedicineModal = ({ open, onClose, onSubmit, medicine, loading, agen
       confirmLoading={loading}
       okText={medicine ? 'Update Entry' : 'Save Medicine'}
       destroyOnClose
-      width={540}
+      width={modalWidth}
+      style={{ top: 20 }}
     >
       <Form
         form={form}
         layout="vertical"
         onFinish={handleFinish}
         initialValues={{ ptr: 10, mrp: 20 }}
-        style={{ marginTop: '1rem' }}
+        style={{ marginTop: '0.75rem' }}
       >
         <Form.Item
           name="product_name"
@@ -74,8 +77,8 @@ const AddEditMedicineModal = ({ open, onClose, onSubmit, medicine, loading, agen
           <Input placeholder="e.g. Paracetamol 650 mg" />
         </Form.Item>
 
-        <Row gutter={16}>
-          <Col span={12}>
+        <Row gutter={[12, 12]}>
+          <Col xs={24} sm={12}>
             <Form.Item
               name="ptr"
               label="PTR (Purchase Price ₹)"
@@ -91,7 +94,7 @@ const AddEditMedicineModal = ({ open, onClose, onSubmit, medicine, loading, agen
               />
             </Form.Item>
           </Col>
-          <Col span={12}>
+          <Col xs={24} sm={12}>
             <Form.Item
               name="mrp"
               label="MRP (Max Retail Price ₹)"
@@ -113,7 +116,7 @@ const AddEditMedicineModal = ({ open, onClose, onSubmit, medicine, loading, agen
           <Card size="small" style={{ background: '#f0fdf4', borderColor: '#bbf7d0', marginBottom: '1rem' }}>
             <Row justify="space-between" align="middle">
               <Text type="secondary" style={{ fontSize: '0.85rem' }}>Estimated Profit Margin:</Text>
-              <Text strong style={{ color: marginPct >= 0 ? '#15803d' : '#dc2626', fontSize: '1rem' }}>
+              <Text strong style={{ color: marginPct >= 0 ? '#15803d' : '#dc2626', fontSize: '0.95rem' }}>
                 {marginPct}% (₹{(mrpValue - ptrValue).toFixed(2)} gain/unit)
               </Text>
             </Row>

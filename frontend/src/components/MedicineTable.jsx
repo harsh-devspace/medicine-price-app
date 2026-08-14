@@ -10,7 +10,7 @@ const MedicineTable = ({ medicines, loading, onEdit, onDelete, onQuickCompare })
       title: 'Sr. No.',
       dataIndex: 'sr_no',
       key: 'sr_no',
-      width: 75,
+      width: 70,
       align: 'center',
       render: (_, __, index) => <Text type="secondary">{index + 1}</Text>,
     },
@@ -18,6 +18,7 @@ const MedicineTable = ({ medicines, loading, onEdit, onDelete, onQuickCompare })
       title: 'Product Name',
       dataIndex: 'product_name',
       key: 'product_name',
+      width: 170,
       sorter: (a, b) => a.product_name.localeCompare(b.product_name),
       render: (text, record) => (
         <Space direction="vertical" size={2}>
@@ -40,6 +41,7 @@ const MedicineTable = ({ medicines, loading, onEdit, onDelete, onQuickCompare })
       title: 'Contain (Composition)',
       dataIndex: 'contain',
       key: 'contain',
+      width: 200,
       render: (text) => (
         <Text style={{ color: '#475569', fontStyle: 'italic', fontSize: '0.85rem' }}>
           {text}
@@ -50,6 +52,7 @@ const MedicineTable = ({ medicines, loading, onEdit, onDelete, onQuickCompare })
       title: 'PTR (₹)',
       dataIndex: 'ptr',
       key: 'ptr',
+      width: 110,
       align: 'right',
       sorter: (a, b) => a.ptr - b.ptr,
       render: (val, record) => (
@@ -57,7 +60,7 @@ const MedicineTable = ({ medicines, loading, onEdit, onDelete, onQuickCompare })
           strong
           style={{
             color: record.is_lowest_ptr ? '#15803d' : '#0d9488',
-            fontSize: '1rem',
+            fontSize: '0.95rem',
           }}
         >
           ₹{parseFloat(val).toFixed(2)}
@@ -68,14 +71,16 @@ const MedicineTable = ({ medicines, loading, onEdit, onDelete, onQuickCompare })
       title: 'MRP (₹)',
       dataIndex: 'mrp',
       key: 'mrp',
+      width: 110,
       align: 'right',
       sorter: (a, b) => a.mrp - b.mrp,
-      render: (val) => <Text style={{ color: '#64748b' }}>₹{parseFloat(val).toFixed(2)}</Text>,
+      render: (val) => <Text style={{ color: '#64748b', fontSize: '0.9rem' }}>₹{parseFloat(val).toFixed(2)}</Text>,
     },
     {
       title: 'Agency / Dealer',
       dataIndex: 'agency',
       key: 'agency',
+      width: 160,
       render: (agency) => (
         <Tag color="cyan" style={{ borderRadius: '12px', padding: '2px 10px', fontWeight: 600 }}>
           {agency}
@@ -86,7 +91,7 @@ const MedicineTable = ({ medicines, loading, onEdit, onDelete, onQuickCompare })
       title: 'Actions',
       key: 'actions',
       align: 'center',
-      width: 140,
+      width: 130,
       render: (_, record) => (
         <Space size="small">
           <Tooltip title="Compare side-by-side prices from all agencies">
@@ -121,19 +126,27 @@ const MedicineTable = ({ medicines, loading, onEdit, onDelete, onQuickCompare })
   ];
 
   return (
-    <Table
-      columns={columns}
-      dataSource={medicines}
-      rowKey="id"
-      loading={loading}
-      pagination={{ pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '25', '50', '100'] }}
-      rowClassName={(record) => (record.is_lowest_ptr ? 'lowest-price-row' : '')}
-      onRow={(record) => ({
-        onDoubleClick: () => onQuickCompare(record),
-      })}
-      bordered={false}
-      style={{ background: '#ffffff', borderRadius: '12px', overflow: 'hidden' }}
-    />
+    <div className="table-responsive-wrapper">
+      <Table
+        columns={columns}
+        dataSource={medicines}
+        rowKey="id"
+        loading={loading}
+        scroll={{ x: 750 }}
+        pagination={{
+          pageSize: 10,
+          showSizeChanger: true,
+          pageSizeOptions: ['10', '25', '50', '100'],
+          responsive: true,
+        }}
+        rowClassName={(record) => (record.is_lowest_ptr ? 'lowest-price-row' : '')}
+        onRow={(record) => ({
+          onDoubleClick: () => onQuickCompare(record),
+        })}
+        bordered={false}
+        style={{ background: '#ffffff', borderRadius: '12px' }}
+      />
+    </div>
   );
 };
 

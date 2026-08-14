@@ -249,8 +249,8 @@ const App = () => {
 
       {/* Main Layout Content */}
       <main className="main-content">
-        {/* Navigation Tabs */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+        {/* Navigation Tabs Header */}
+        <div className="tab-actions-header">
           <Tabs
             activeKey={activeTab}
             onChange={setActiveTab}
@@ -259,9 +259,9 @@ const App = () => {
               {
                 key: 'directory',
                 label: (
-                  <Space>
+                  <Space size={4}>
                     <MedicineBoxOutlined />
-                    <span>Medicine Price Directory</span>
+                    <span>Price Directory</span>
                     <Badge count={medicines.length} overflowCount={999} style={{ backgroundColor: '#0d9488' }} />
                   </Space>
                 ),
@@ -269,21 +269,21 @@ const App = () => {
               {
                 key: 'compare',
                 label: (
-                  <Space>
+                  <Space size={4}>
                     <SwapOutlined />
-                    <span>Price Comparison Matrix</span>
+                    <span>Compare Matrix</span>
                   </Space>
                 ),
               },
             ]}
           />
 
-          <Space>
+          <div className="tab-actions-buttons">
             <Button
               icon={<FileExcelOutlined style={{ color: '#16a34a' }} />}
               onClick={() => setCsvModalOpen(true)}
             >
-              CSV Data Tools
+              CSV Tools
             </Button>
             <Button
               type="primary"
@@ -296,7 +296,7 @@ const App = () => {
             >
               + Add Medicine
             </Button>
-          </Space>
+          </div>
         </div>
 
         {/* Tab 1: Medicine Directory */}
@@ -317,18 +317,18 @@ const App = () => {
 
               <div className="toolbar-right">
                 <Select
-                  placeholder="Filter by Agency"
+                  placeholder="Filter Agency"
                   allowClear
                   value={selectedAgency}
                   onChange={setSelectedAgency}
-                  style={{ width: 180 }}
+                  style={{ minWidth: 140 }}
                   options={agencies.map((a) => ({ value: a, label: a }))}
                 />
 
                 <Select
                   value={sortBy}
                   onChange={setSortBy}
-                  style={{ width: 170 }}
+                  style={{ minWidth: 150 }}
                   options={[
                     { value: 'product_name', label: 'Name (A to Z)' },
                     { value: 'product_name_desc', label: 'Name (Z to A)' },
@@ -382,7 +382,7 @@ const App = () => {
         placement="right"
         onClose={() => setFilterDrawerOpen(false)}
         open={filterDrawerOpen}
-        width={360}
+        width={Math.min(360, typeof window !== 'undefined' ? window.innerWidth : 360)}
       >
         <Space direction="vertical" style={{ width: '100%' }} size="large">
           <div>

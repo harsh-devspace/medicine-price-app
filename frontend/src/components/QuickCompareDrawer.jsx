@@ -41,8 +41,9 @@ const QuickCompareDrawer = ({ open, onClose, selectedMedicine }) => {
       title: 'Agency / Supplier',
       dataIndex: 'agency',
       key: 'agency',
+      width: 150,
       render: (text, record) => (
-        <Space>
+        <Space wrap>
           <ShopOutlined style={{ color: '#0d9488' }} />
           <Text strong>{text}</Text>
           {record.is_best_deal && (
@@ -57,13 +58,14 @@ const QuickCompareDrawer = ({ open, onClose, selectedMedicine }) => {
       title: 'PTR (₹)',
       dataIndex: 'ptr',
       key: 'ptr',
+      width: 90,
       align: 'right',
       render: (val, record) => (
         <Text
           strong
           style={{
             color: record.is_best_deal ? '#15803d' : '#0f172a',
-            fontSize: record.is_best_deal ? '1.1rem' : '0.95rem',
+            fontSize: record.is_best_deal ? '1.05rem' : '0.95rem',
           }}
         >
           ₹{parseFloat(val).toFixed(2)}
@@ -74,19 +76,21 @@ const QuickCompareDrawer = ({ open, onClose, selectedMedicine }) => {
       title: 'MRP (₹)',
       dataIndex: 'mrp',
       key: 'mrp',
+      width: 90,
       align: 'right',
       render: (val) => `₹${parseFloat(val).toFixed(2)}`,
     },
     {
       title: 'Price Diff vs Lowest',
       key: 'diff',
+      width: 110,
       align: 'right',
       render: (_, record) => {
         if (record.is_best_deal) {
           return <Tag color="green">Best Price</Tag>;
         }
         return (
-          <Text type="danger" style={{ fontWeight: 600 }}>
+          <Text type="danger" style={{ fontWeight: 600, fontSize: '0.85rem' }}>
             +₹{record.price_diff_vs_lowest.toFixed(2)}
           </Text>
         );
@@ -94,11 +98,13 @@ const QuickCompareDrawer = ({ open, onClose, selectedMedicine }) => {
     },
   ];
 
+  const drawerWidth = typeof window !== 'undefined' ? Math.min(600, window.innerWidth) : 600;
+
   return (
     <Drawer
       title={
         <div>
-          <Title level={4} style={{ margin: 0, color: '#0f766e' }}>
+          <Title level={4} style={{ margin: 0, color: '#0f766e', fontSize: '1.1rem' }}>
             Price Comparison
           </Title>
           <Text type="secondary" style={{ fontSize: '0.85rem' }}>
@@ -107,10 +113,10 @@ const QuickCompareDrawer = ({ open, onClose, selectedMedicine }) => {
         </div>
       }
       placement="right"
-      width={600}
+      width={drawerWidth}
       onClose={onClose}
       open={open}
-      styles={{ body: { padding: '1.25rem' } }}
+      styles={{ body: { padding: '1rem' } }}
     >
       {loading ? (
         <div style={{ textAlign: 'center', padding: '3rem' }}>
@@ -121,7 +127,7 @@ const QuickCompareDrawer = ({ open, onClose, selectedMedicine }) => {
           {compareData.suppliers.length > 1 && compareData.max_savings > 0 ? (
             <Alert
               message={
-                <span>
+                <span style={{ fontSize: '0.85rem' }}>
                   <TrophyFilled style={{ color: '#15803d', marginRight: '6px' }} />
                   Buying from <strong>{compareData.suppliers[0].agency}</strong> saves up to{' '}
                   <strong>₹{compareData.max_savings.toFixed(2)}</strong> per unit!
@@ -129,14 +135,14 @@ const QuickCompareDrawer = ({ open, onClose, selectedMedicine }) => {
               }
               type="success"
               showIcon={false}
-              style={{ marginBottom: '1.25rem', borderRadius: '8px' }}
+              style={{ marginBottom: '1rem', borderRadius: '8px' }}
             />
           ) : (
             <Alert
               message="Currently only 1 agency listed for this medicine."
               type="info"
               showIcon
-              style={{ marginBottom: '1.25rem' }}
+              style={{ marginBottom: '1rem' }}
             />
           )}
 
@@ -144,14 +150,17 @@ const QuickCompareDrawer = ({ open, onClose, selectedMedicine }) => {
             Dealer Price List ({compareData.suppliers.length} Agencies)
           </Title>
 
-          <Table
-            columns={columns}
-            dataSource={compareData.suppliers}
-            rowKey="id"
-            pagination={false}
-            bordered
-            rowClassName={(record) => (record.is_best_deal ? 'lowest-price-row' : '')}
-          />
+          <div style={{ overflowX: 'auto' }}>
+            <Table
+              columns={columns}
+              dataSource={compareData.suppliers}
+              rowKey="id"
+              pagination={false}
+              bordered
+              scroll={{ x: 440 }}
+              rowClassName={(record) => (record.is_best_deal ? 'lowest-price-row' : '')}
+            />
+          </div>
         </div>
       ) : (
         <Text type="secondary">No comparison data available.</Text>

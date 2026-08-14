@@ -42,12 +42,14 @@ const CsvModal = ({ open, onClose, onRefresh }) => {
     }
   };
 
+  const modalWidth = typeof window !== 'undefined' ? Math.min(540, window.innerWidth - 24) : 540;
+
   return (
     <Modal
       title={
         <Space style={{ color: '#0d9488' }}>
           <FileExcelOutlined style={{ fontSize: '1.25rem' }} />
-          <Title level={4} style={{ margin: 0, color: '#0f766e' }}>
+          <Title level={4} style={{ margin: 0, color: '#0f766e', fontSize: '1.05rem' }}>
             CSV Import & Export Data Tools
           </Title>
         </Space>
@@ -55,7 +57,8 @@ const CsvModal = ({ open, onClose, onRefresh }) => {
       open={open}
       onCancel={onClose}
       footer={null}
-      width={540}
+      width={modalWidth}
+      style={{ top: 20 }}
     >
       <Card style={{ marginBottom: '1rem', background: '#f8fafc' }}>
         <Title level={5} style={{ margin: 0, marginBottom: '0.5rem', color: '#1e293b' }}>
