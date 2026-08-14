@@ -1,0 +1,17 @@
+{
+  "name": "medprice-backend",
+  "version": "1.0.0",
+  "description": "Medicine Price Comparison Backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "sqlite3": "^5.1.7",
+    "express": "^4.21.2",
+    "cors": "^2.8.5",
+    "multer": "^1.4.5-lts.1",
+    "csv-parser": "^3.2.0"
+  }
+}
