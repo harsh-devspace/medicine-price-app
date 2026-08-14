@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "postinstall": "npm rebuild sqlite3 --build-from-source"
   },
   "dependencies": {
     "sqlite3": "^5.1.7",
@@ -15,6 +16,6 @@
     "csv-parser": "^3.2.0"
   },
   "engines": {
-    "node": "22.x"
+    "node": "20.x || 22.x"
   }
 }
