@@ -36,15 +36,21 @@ const escapeCsvCell = (val) => {
 };
 
 // Resolve backend Supabase key (supports SUPABASE_SECRET_KEY and legacy SUPABASE_SERVICE_ROLE_KEY)
+const supabaseUrl =
+  process.env.SUPABASE_URL || 'https://sgsdtklsztjpqhrgrugb.supabase.co';
+
 const supabaseBackendKey =
-  process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+  process.env.SUPABASE_SECRET_KEY ||
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  'sb_publishable_l_xsU9XR5AQTbv7mfNsvtw_3_qqMeSY';
 
 // Create a Supabase client scoped to the authenticated user's token
 // This guarantees database-level Row Level Security (RLS) enforcement!
 const getClientForUser = (token) => {
   return createClient(
-    process.env.SUPABASE_URL,
-    supabaseBackendKey || process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_ANON_KEY,
+    supabaseUrl,
+    supabaseBackendKey,
     {
       global: {
         headers: token ? { Authorization: `Bearer ${token}` } : {},

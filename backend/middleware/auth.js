@@ -1,4 +1,5 @@
-const { supabase } = require('../supabaseClient');
+const { createClient } = require('@supabase/supabase-js');
+const { supabaseUrl, supabaseSecretKey } = require('../supabaseClient');
 
 const authMiddleware = async (req, res, next) => {
   try {
@@ -19,8 +20,12 @@ const authMiddleware = async (req, res, next) => {
       });
     }
 
-    // Verify token using Supabase Auth
-    const { data, error } = await supabase.auth.getUser(token);
+    // Verify token directly using Supabase Auth client with project URL
+    const verifyClient = createClient(supabaseUrl, supabaseSecretKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+
+    const { data, error } = await verifyClient.auth.getUser(token);
 
     if (error || !data || !data.user) {
       return res.status(401).json({
