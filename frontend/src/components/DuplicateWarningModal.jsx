@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, Alert, Typography, Descriptions, Button, Space } from 'antd';
-import { WarningFilled, EditOutlined, PlusOutlined } from '@ant-design/icons';
+import { WarningFilled, EditOutlined } from '@ant-design/icons';
 
 const { Text, Title } = Typography;
 
@@ -39,11 +39,12 @@ const DuplicateWarningModal = ({ open, onCancel, onConfirmUpdate, duplicateInfo 
       />
 
       <Descriptions title="Price Comparison Breakdown" bordered size="small" column={1}>
+        <Descriptions.Item label="Company">{newValues.company_name || existingRecord.company_name || 'Unknown'}</Descriptions.Item>
         <Descriptions.Item label="Medicine">{newValues.product_name} ({newValues.contain})</Descriptions.Item>
         <Descriptions.Item label="Supplier">{newValues.agency}</Descriptions.Item>
         <Descriptions.Item label="Current Saved PTR">
-          <Text delete style={{ color: '#64748b' }}>₹{existingRecord.ptr.toFixed(2)}</Text>
-          <Text type="secondary"> (MRP: ₹{existingRecord.mrp.toFixed(2)})</Text>
+          <Text delete style={{ color: '#64748b' }}>₹{parseFloat(existingRecord.ptr).toFixed(2)}</Text>
+          <Text type="secondary"> (MRP: ₹{parseFloat(existingRecord.mrp).toFixed(2)})</Text>
         </Descriptions.Item>
         <Descriptions.Item label="New Proposed PTR">
           <Text strong style={{ color: '#0d9488', fontSize: '1rem' }}>

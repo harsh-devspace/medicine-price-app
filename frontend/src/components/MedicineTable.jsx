@@ -10,9 +10,21 @@ const MedicineTable = ({ medicines, loading, onEdit, onDelete, onQuickCompare })
       title: 'Sr. No.',
       dataIndex: 'sr_no',
       key: 'sr_no',
-      width: 70,
+      width: 65,
       align: 'center',
       render: (_, __, index) => <Text type="secondary">{index + 1}</Text>,
+    },
+    {
+      title: 'Company Name',
+      dataIndex: 'company_name',
+      key: 'company_name',
+      width: 150,
+      sorter: (a, b) => (a.company_name || '').localeCompare(b.company_name || ''),
+      render: (text) => (
+        <Tag color="blue" style={{ borderRadius: '10px', padding: '2px 8px', fontWeight: 600 }}>
+          {text || 'Unknown'}
+        </Tag>
+      ),
     },
     {
       title: 'Product Name',
@@ -23,7 +35,7 @@ const MedicineTable = ({ medicines, loading, onEdit, onDelete, onQuickCompare })
       render: (text, record) => (
         <Space direction="vertical" size={2}>
           <Text
-            bold
+            strong
             style={{ fontSize: '0.95rem', cursor: 'pointer', color: '#0f766e' }}
             onClick={() => onQuickCompare(record)}
           >
@@ -80,7 +92,7 @@ const MedicineTable = ({ medicines, loading, onEdit, onDelete, onQuickCompare })
       title: 'Agency / Dealer',
       dataIndex: 'agency',
       key: 'agency',
-      width: 160,
+      width: 150,
       render: (agency) => (
         <Tag color="cyan" style={{ borderRadius: '12px', padding: '2px 10px', fontWeight: 600 }}>
           {agency}
@@ -132,7 +144,7 @@ const MedicineTable = ({ medicines, loading, onEdit, onDelete, onQuickCompare })
         dataSource={medicines}
         rowKey="id"
         loading={loading}
-        scroll={{ x: 750 }}
+        scroll={{ x: 880 }}
         pagination={{
           pageSize: 10,
           showSizeChanger: true,

@@ -16,6 +16,9 @@ import {
   Card,
   Tooltip,
   Divider,
+  Spin,
+  Popconfirm,
+  Avatar,
 } from 'antd';
 import {
   MedicineBoxOutlined,
@@ -25,13 +28,16 @@ import {
   SwapOutlined,
   FileExcelOutlined,
   ShopOutlined,
-  ReloadOutlined,
-  CheckCircleOutlined,
   TrophyOutlined,
   UndoOutlined,
+  BankOutlined,
+  UserOutlined,
+  LogoutOutlined,
 } from '@ant-design/icons';
 import axios from 'axios';
 
+import { useAuth } from './context/AuthContext';
+import AuthView from './components/AuthView';
 import MedicineTable from './components/MedicineTable';
 import QuickCompareDrawer from './components/QuickCompareDrawer';
 import PriceComparisonView from './components/PriceComparisonView';
@@ -43,15 +49,24 @@ const { Header, Content, Footer } = Layout;
 const { Title, Text } = Typography;
 
 const App = () => {
+  const { user, loading: authLoading, logout } = useAuth();
+
   const [medicines, setMedicines] = useState([]);
   const [agencies, setAgencies] = useState([]);
-  const [stats, setStats] = useState({ totalMedicines: 0, totalAgencies: 0, uniqueProducts: 0 });
+  const [companies, setCompanies] = useState([]);
+  const [stats, setStats] = useState({
+    totalMedicines: 0,
+    totalAgencies: 0,
+    uniqueProducts: 0,
+    totalCompanies: 0,
+  });
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('directory');
 
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedAgency, setSelectedAgency] = useState(null);
+  const [selectedCompany, setSelectedCompany] = useState(null);
   const [ptrRange, setPtrRange] = useState([0, 500]);
   const [mrpRange, setMrpRange] = useState([0, 1000]);
   const [sortBy, setSortBy] = useState('product_name');
@@ -69,11 +84,13 @@ const App = () => {
 
   // Fetch medicines with current filters
   const fetchMedicines = useCallback(async () => {
+    if (!user) return;
     setLoading(true);
     try {
       const params = {
         q: searchQuery,
         agency: selectedAgency || undefined,
+        company: selectedCompany || undefined,
         minPtr: ptrRange[0] > 0 ? ptrRange[0] : undefined,
         maxPtr: ptrRange[1] < 500 ? ptrRange[1] : undefined,
         minMrp: mrpRange[0] > 0 ? mrpRange[0] : undefined,
@@ -87,14 +104,19 @@ const App = () => {
       }
     } catch (err) {
       console.error('Error loading medicines:', err);
-      message.error('Failed to connect to backend server');
+      if (err.response?.status === 401) {
+        message.warning('Session expired. Please log in again.');
+      } else {
+        message.error('Failed to connect to backend server');
+      }
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, selectedAgency, ptrRange, mrpRange, sortBy]);
+  }, [user, searchQuery, selectedAgency, selectedCompany, ptrRange, mrpRange, sortBy]);
 
   // Fetch agencies list
   const fetchAgencies = useCallback(async () => {
+    if (!user) return;
     try {
       const res = await axios.get('/api/agencies');
       if (res.data.success) {
@@ -103,10 +125,24 @@ const App = () => {
     } catch (err) {
       console.error('Error loading agencies:', err);
     }
-  }, []);
+  }, [user]);
+
+  // Fetch companies list
+  const fetchCompanies = useCallback(async () => {
+    if (!user) return;
+    try {
+      const res = await axios.get('/api/companies');
+      if (res.data.success) {
+        setCompanies(res.data.companies);
+      }
+    } catch (err) {
+      console.error('Error loading companies:', err);
+    }
+  }, [user]);
 
   // Fetch stats overview
   const fetchStats = useCallback(async () => {
+    if (!user) return;
     try {
       const res = await axios.get('/api/dashboard/stats');
       if (res.data.success) {
@@ -115,13 +151,20 @@ const App = () => {
     } catch (err) {
       console.error('Error loading stats:', err);
     }
-  }, []);
+  }, [user]);
 
-  useEffect(() => {
+  const refreshAllData = useCallback(() => {
     fetchMedicines();
     fetchAgencies();
+    fetchCompanies();
     fetchStats();
-  }, [fetchMedicines, fetchAgencies, fetchStats]);
+  }, [fetchMedicines, fetchAgencies, fetchCompanies, fetchStats]);
+
+  useEffect(() => {
+    if (user) {
+      refreshAllData();
+    }
+  }, [user, refreshAllData]);
 
   // Handle Add or Submit Form (with Duplicate Check)
   const handleSaveMedicine = async (values, forceUpdate = false) => {
@@ -134,9 +177,7 @@ const App = () => {
           message.success('Medicine record updated successfully');
           setAddEditOpen(false);
           setEditingMedicine(null);
-          fetchMedicines();
-          fetchAgencies();
-          fetchStats();
+          refreshAllData();
         }
       } else {
         // Add mode (with duplicate check)
@@ -160,9 +201,7 @@ const App = () => {
             setAddEditOpen(false);
             setDuplicateWarningOpen(false);
             setDuplicateInfo(null);
-            fetchMedicines();
-            fetchAgencies();
-            fetchStats();
+            refreshAllData();
           }
         }
       }
@@ -187,9 +226,7 @@ const App = () => {
       const res = await axios.delete(`/api/medicines/${id}`);
       if (res.data.success) {
         message.success('Medicine record deleted');
-        fetchMedicines();
-        fetchAgencies();
-        fetchStats();
+        refreshAllData();
       }
     } catch (err) {
       message.error(err.response?.data?.message || 'Failed to delete record');
@@ -206,6 +243,7 @@ const App = () => {
   const handleResetFilters = () => {
     setSearchQuery('');
     setSelectedAgency(null);
+    setSelectedCompany(null);
     setPtrRange([0, 500]);
     setMrpRange([0, 1000]);
     setSortBy('product_name');
@@ -213,7 +251,45 @@ const App = () => {
   };
 
   const hasActiveFilters =
-    searchQuery || selectedAgency || ptrRange[0] > 0 || ptrRange[1] < 500 || mrpRange[0] > 0 || mrpRange[1] < 1000;
+    searchQuery ||
+    selectedAgency ||
+    selectedCompany ||
+    ptrRange[0] > 0 ||
+    ptrRange[1] < 500 ||
+    mrpRange[0] > 0 ||
+    mrpRange[1] < 1000;
+
+  // 1. Loading screen while authenticating
+  if (authLoading) {
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexDirection: 'column',
+          gap: '1rem',
+          background: '#f8fafc',
+        }}
+      >
+        <Spin size="large" />
+        <Text type="secondary">Loading Medicine Price App...</Text>
+      </div>
+    );
+  }
+
+  // 2. Unauthenticated -> Show Login/Signup Page
+  if (!user) {
+    return <AuthView />;
+  }
+
+  // User Display Name
+  const userName =
+    user.user_metadata?.full_name ||
+    user.user_metadata?.name ||
+    user.email?.split('@')[0] ||
+    'Doctor';
 
   return (
     <div className="app-container">
@@ -235,6 +311,11 @@ const App = () => {
             <strong>{stats.totalMedicines}</strong>
           </div>
           <div className="stat-pill">
+            <BankOutlined style={{ color: '#0284c7' }} />
+            <span>Companies:</span>
+            <strong>{stats.totalCompanies}</strong>
+          </div>
+          <div className="stat-pill">
             <ShopOutlined style={{ color: '#0d9488' }} />
             <span>Agencies:</span>
             <strong>{stats.totalAgencies}</strong>
@@ -243,6 +324,46 @@ const App = () => {
             <TrophyOutlined style={{ color: '#15803d' }} />
             <span>Formulas:</span>
             <strong>{stats.uniqueProducts}</strong>
+          </div>
+
+          {/* User Profile & Logout */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '8px' }}>
+            <Tooltip title={`Signed in as ${user.email}`}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: '#f1f5f9',
+                  padding: '4px 10px',
+                  borderRadius: '20px',
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  color: '#334155',
+                }}
+              >
+                <Avatar size={20} style={{ backgroundColor: '#0d9488' }} icon={<UserOutlined />} />
+                <span>{userName}</span>
+              </div>
+            </Tooltip>
+
+            <Popconfirm
+              title="Logout"
+              description="Are you sure you want to log out?"
+              onConfirm={logout}
+              okText="Yes, Logout"
+              cancelText="Cancel"
+            >
+              <Button
+                type="text"
+                danger
+                icon={<LogoutOutlined />}
+                size="small"
+                style={{ borderRadius: '6px' }}
+              >
+                Logout
+              </Button>
+            </Popconfirm>
           </div>
         </div>
       </header>
@@ -262,7 +383,11 @@ const App = () => {
                   <Space size={4}>
                     <MedicineBoxOutlined />
                     <span>Price Directory</span>
-                    <Badge count={medicines.length} overflowCount={999} style={{ backgroundColor: '#0d9488' }} />
+                    <Badge
+                      count={medicines.length}
+                      overflowCount={999}
+                      style={{ backgroundColor: '#0d9488' }}
+                    />
                   </Space>
                 ),
               },
@@ -308,7 +433,7 @@ const App = () => {
             <div className="toolbar-card">
               <div className="toolbar-left">
                 <Input
-                  placeholder="Search Product Name, Composition, or Agency..."
+                  placeholder="Search Product Name, Company, Composition, or Agency..."
                   prefix={<SearchOutlined style={{ color: '#0d9488' }} />}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -318,6 +443,15 @@ const App = () => {
               </div>
 
               <div className="toolbar-right">
+                <Select
+                  placeholder="Filter Company"
+                  allowClear
+                  value={selectedCompany}
+                  onChange={setSelectedCompany}
+                  style={{ minWidth: 140 }}
+                  options={companies.map((c) => ({ value: c, label: c }))}
+                />
+
                 <Select
                   placeholder="Filter Agency"
                   allowClear
@@ -330,10 +464,12 @@ const App = () => {
                 <Select
                   value={sortBy}
                   onChange={setSortBy}
-                  style={{ minWidth: 150 }}
+                  style={{ minWidth: 160 }}
                   options={[
                     { value: 'product_name', label: 'Name (A to Z)' },
                     { value: 'product_name_desc', label: 'Name (Z to A)' },
+                    { value: 'company_name_asc', label: 'Company (A to Z)' },
+                    { value: 'company_name_desc', label: 'Company (Z to A)' },
                     { value: 'ptr_asc', label: 'PTR: Low to High' },
                     { value: 'ptr_desc', label: 'PTR: High to Low' },
                     { value: 'mrp_asc', label: 'MRP: Low to High' },
@@ -391,7 +527,9 @@ const App = () => {
             <Text strong>PTR Range (₹):</Text>
             <Row gutter={16} style={{ marginTop: '8px' }}>
               <Col span={12}>Min: ₹{ptrRange[0]}</Col>
-              <Col span={12} style={{ textAlign: 'right' }}>Max: ₹{ptrRange[1] === 500 ? '500+' : ptrRange[1]}</Col>
+              <Col span={12} style={{ textAlign: 'right' }}>
+                Max: ₹{ptrRange[1] === 500 ? '500+' : ptrRange[1]}
+              </Col>
             </Row>
             <Slider
               range
@@ -407,7 +545,9 @@ const App = () => {
             <Text strong>MRP Range (₹):</Text>
             <Row gutter={16} style={{ marginTop: '8px' }}>
               <Col span={12}>Min: ₹{mrpRange[0]}</Col>
-              <Col span={12} style={{ textAlign: 'right' }}>Max: ₹{mrpRange[1] === 1000 ? '1000+' : mrpRange[1]}</Col>
+              <Col span={12} style={{ textAlign: 'right' }}>
+                Max: ₹{mrpRange[1] === 1000 ? '1000+' : mrpRange[1]}
+              </Col>
             </Row>
             <Slider
               range
@@ -420,7 +560,23 @@ const App = () => {
           </div>
 
           <div>
-            <Text strong style={{ display: 'block', marginBottom: '8px' }}>Supplier / Agency:</Text>
+            <Text strong style={{ display: 'block', marginBottom: '8px' }}>
+              Company / Manufacturer:
+            </Text>
+            <Select
+              placeholder="Select Company"
+              allowClear
+              value={selectedCompany}
+              onChange={setSelectedCompany}
+              style={{ width: '100%' }}
+              options={companies.map((c) => ({ value: c, label: c }))}
+            />
+          </div>
+
+          <div>
+            <Text strong style={{ display: 'block', marginBottom: '8px' }}>
+              Supplier / Agency:
+            </Text>
             <Select
               placeholder="Select Agency"
               allowClear
@@ -459,6 +615,7 @@ const App = () => {
         medicine={editingMedicine}
         loading={formSubmitting}
         agencies={agencies}
+        companies={companies}
       />
 
       <DuplicateWarningModal
@@ -474,16 +631,12 @@ const App = () => {
       <CsvModal
         open={csvModalOpen}
         onClose={() => setCsvModalOpen(false)}
-        onRefresh={() => {
-          fetchMedicines();
-          fetchAgencies();
-          fetchStats();
-        }}
+        onRefresh={refreshAllData}
       />
 
       {/* Footer */}
       <footer className="app-footer">
-        Medicine Price Comparison System for Doctors • Fast, Offline-Ready, SQLite Powered
+        Medicine Price Comparison System for Doctors • Multi-User Cloud Suite • Supabase & PostgreSQL
       </footer>
     </div>
   );

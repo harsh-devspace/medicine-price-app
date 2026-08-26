@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { Card, Row, Col, Tag, Typography, Input, Space, Button, Badge, Divider, Table } from 'antd';
-import { SearchOutlined, TrophyFilled, ShopOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
+import { Card, Row, Col, Tag, Typography, Input, Space } from 'antd';
+import { SearchOutlined, TrophyFilled, ShopOutlined, BankOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 
@@ -12,12 +12,13 @@ const PriceComparisonView = ({ medicines, onQuickCompare }) => {
     const map = new Map();
 
     medicines.forEach((med) => {
-      const key = `${med.product_name.trim().toLowerCase()}||${med.contain.trim().toLowerCase()}`;
+      const key = `${(med.product_name || '').trim().toLowerCase()}||${(med.contain || '').trim().toLowerCase()}`;
       if (!map.has(key)) {
         map.set(key, {
           key,
           product_name: med.product_name,
           contain: med.contain,
+          company_name: med.company_name,
           items: [],
         });
       }
@@ -47,15 +48,20 @@ const PriceComparisonView = ({ medicines, onQuickCompare }) => {
     return groups;
   }, [medicines]);
 
-  // Filter groups by search term
+  // Filter groups by search term (including company name)
   const filteredGroups = useMemo(() => {
     if (!searchTerm.trim()) return groupedData;
     const term = searchTerm.toLowerCase();
     return groupedData.filter(
       (g) =>
-        g.product_name.toLowerCase().includes(term) ||
-        g.contain.toLowerCase().includes(term) ||
-        g.items.some((i) => i.agency.toLowerCase().includes(term))
+        (g.product_name || '').toLowerCase().includes(term) ||
+        (g.contain || '').toLowerCase().includes(term) ||
+        (g.company_name || '').toLowerCase().includes(term) ||
+        g.items.some(
+          (i) =>
+            (i.agency || '').toLowerCase().includes(term) ||
+            (i.company_name || '').toLowerCase().includes(term)
+        )
     );
   }, [groupedData, searchTerm]);
 
@@ -74,7 +80,7 @@ const PriceComparisonView = ({ medicines, onQuickCompare }) => {
           </Col>
           <Col xs={24} sm={12}>
             <Input
-              placeholder="Search product name, composition or supplier..."
+              placeholder="Search product name, company, composition or supplier..."
               prefix={<SearchOutlined style={{ color: '#0d9488' }} />}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -98,10 +104,15 @@ const PriceComparisonView = ({ medicines, onQuickCompare }) => {
               }}
               title={
                 <div>
-                  <Space align="baseline">
+                  <Space align="baseline" wrap>
                     <Title level={5} style={{ margin: 0, color: '#0f172a' }}>
                       {group.product_name}
                     </Title>
+                    {group.company_name && (
+                      <Tag color="blue" style={{ fontSize: '0.75rem', borderRadius: '8px' }}>
+                        {group.company_name}
+                      </Tag>
+                    )}
                     <Text type="secondary" style={{ fontSize: '0.85rem' }}>
                       ({group.contain})
                     </Text>
@@ -130,11 +141,16 @@ const PriceComparisonView = ({ medicines, onQuickCompare }) => {
                     }}
                   >
                     <div>
-                      <Space>
+                      <Space wrap>
                         <ShopOutlined style={{ color: item.is_lowest ? '#15803d' : '#64748b' }} />
                         <Text strong style={{ fontSize: '1rem', color: '#1e293b' }}>
                           {item.agency}
                         </Text>
+                        {item.company_name && item.company_name !== group.company_name && (
+                          <Tag color="default" style={{ fontSize: '0.75rem' }}>
+                            {item.company_name}
+                          </Tag>
+                        )}
                         {item.is_lowest && (
                           <Tag color="success" className="lowest-price-tag">
                             <TrophyFilled /> Best Deal

@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { Modal, Form, Input, InputNumber, Select, Row, Col, Typography, Card } from 'antd';
-import { MedicineBoxOutlined, DollarOutlined, ShopOutlined } from '@ant-design/icons';
+import { MedicineBoxOutlined, ShopOutlined, BankOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
 
-const AddEditMedicineModal = ({ open, onClose, onSubmit, medicine, loading, agencies }) => {
+const AddEditMedicineModal = ({ open, onClose, onSubmit, medicine, loading, agencies = [], companies = [] }) => {
   const [form] = Form.useForm();
   const ptrValue = Form.useWatch('ptr', form);
   const mrpValue = Form.useWatch('mrp', form);
@@ -12,11 +12,12 @@ const AddEditMedicineModal = ({ open, onClose, onSubmit, medicine, loading, agen
   useEffect(() => {
     if (medicine) {
       form.setFieldsValue({
-        product_name: medicine.product_name,
-        contain: medicine.contain,
-        ptr: medicine.ptr,
-        mrp: medicine.mrp,
-        agency: medicine.agency,
+        company_name: medicine.company_name || '',
+        product_name: medicine.product_name || '',
+        contain: medicine.contain || '',
+        ptr: medicine.ptr !== undefined ? medicine.ptr : 10,
+        mrp: medicine.mrp !== undefined ? medicine.mrp : 20,
+        agency: medicine.agency || '',
       });
     } else {
       form.resetFields();
@@ -61,17 +62,40 @@ const AddEditMedicineModal = ({ open, onClose, onSubmit, medicine, loading, agen
         initialValues={{ ptr: 10, mrp: 20 }}
         style={{ marginTop: '0.75rem' }}
       >
-        <Form.Item
-          name="product_name"
-          label="Product Name"
-          rules={[{ required: true, message: 'Please enter product name (e.g. Dolo 650)' }]}
-        >
-          <Input placeholder="e.g. Dolo 650" prefix={<MedicineBoxOutlined style={{ color: '#64748b' }} />} />
-        </Form.Item>
+        <Row gutter={[12, 12]}>
+          <Col xs={24} sm={12}>
+            <Form.Item
+              name="company_name"
+              label="Company / Manufacturer Name"
+              rules={[{ required: true, message: 'Please enter company name (e.g. Cipla, Sun Pharma)' }]}
+            >
+              <Select
+                showSearch
+                allowClear
+                placeholder="e.g. Cipla, Micro Labs"
+                options={companies.map((c) => ({ value: c, label: c }))}
+                onSearch={(val) => {
+                  if (val && !companies.includes(val)) {
+                    form.setFieldValue('company_name', val);
+                  }
+                }}
+              />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={12}>
+            <Form.Item
+              name="product_name"
+              label="Product Name"
+              rules={[{ required: true, message: 'Please enter product name (e.g. Dolo 650)' }]}
+            >
+              <Input placeholder="e.g. Dolo 650" prefix={<MedicineBoxOutlined style={{ color: '#64748b' }} />} />
+            </Form.Item>
+          </Col>
+        </Row>
 
         <Form.Item
           name="contain"
-          label="Contain (Composition)"
+          label="Contain (Composition / Formula)"
           rules={[{ required: true, message: 'Please enter composition (e.g. Paracetamol 650 mg)' }]}
         >
           <Input placeholder="e.g. Paracetamol 650 mg" />
@@ -134,11 +158,6 @@ const AddEditMedicineModal = ({ open, onClose, onSubmit, medicine, loading, agen
             placeholder="Select existing agency or type a new one"
             prefix={<ShopOutlined />}
             options={agencies.map((a) => ({ value: a, label: a }))}
-            dropdownRender={(menu) => (
-              <>
-                {menu}
-              </>
-            )}
             onSearch={(val) => {
               if (val && !agencies.includes(val)) {
                 form.setFieldValue('agency', val);

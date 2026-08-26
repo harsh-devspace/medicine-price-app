@@ -1,18 +1,43 @@
 import React, { useState } from 'react';
-import { Modal, Upload, Button, Typography, Space, Alert, Card, message } from 'antd';
-import { DownloadOutlined, UploadOutlined, FileExcelOutlined, InboxOutlined } from '@ant-design/icons';
+import { Modal, Upload, Button, Typography, Space, Card, message } from 'antd';
+import { DownloadOutlined, FileExcelOutlined, InboxOutlined } from '@ant-design/icons';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text } = Typography;
 const { Dragger } = Upload;
 
 const CsvModal = ({ open, onClose, onRefresh }) => {
   const [uploading, setUploading] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const { getAccessToken } = useAuth();
 
-  const handleExportCsv = () => {
-    const apiBase = axios.defaults.baseURL || import.meta.env.VITE_API_URL || 'https://medicine-price-app.onrender.com';
-    window.location.href = `${apiBase}/api/export/csv`;
-    message.success('Exporting CSV database file...');
+  const handleExportCsv = async () => {
+    setExporting(true);
+    try {
+      const token = getAccessToken();
+      const res = await axios.get('/api/export/csv', {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        responseType: 'blob',
+      });
+
+      const blob = new Blob([res.data], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `medicine_prices_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      message.success('Medicine price database exported successfully!');
+    } catch (err) {
+      console.error('Export error:', err);
+      message.error('Failed to export CSV file.');
+    } finally {
+      setExporting(false);
+    }
   };
 
   const customUploadRequest = async ({ file, onSuccess, onError }) => {
@@ -21,8 +46,12 @@ const CsvModal = ({ open, onClose, onRefresh }) => {
     formData.append('file', file);
 
     try {
+      const token = getAccessToken();
       const res = await axios.post('/api/import/csv', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
       });
       if (res.data.success) {
         message.success(res.data.message);
@@ -65,15 +94,16 @@ const CsvModal = ({ open, onClose, onRefresh }) => {
           Export Medicine Price Database
         </Title>
         <Text type="secondary" style={{ display: 'block', marginBottom: '0.75rem', fontSize: '0.85rem' }}>
-          Download your complete medicine pricing dataset as a standard CSV spreadsheet file.
+          Download your personal medicine pricing dataset as a standard CSV spreadsheet file.
         </Text>
         <Button
           type="primary"
           icon={<DownloadOutlined />}
           onClick={handleExportCsv}
+          loading={exporting}
           style={{ backgroundColor: '#0d9488', borderColor: '#0d9488' }}
         >
-          Download CSV File
+          Download My Medicines CSV
         </Button>
       </Card>
 
@@ -82,7 +112,7 @@ const CsvModal = ({ open, onClose, onRefresh }) => {
           Import Medicines from CSV
         </Title>
         <Text type="secondary" style={{ display: 'block', marginBottom: '0.75rem', fontSize: '0.85rem' }}>
-          Upload a CSV file containing columns: <code>Product Name, Contain, PTR, MRP, Agency</code>. Existing records will be updated automatically!
+          Upload a CSV file with columns: <code>Company Name, Product Name, Contain, PTR, MRP, Agency</code>. Existing records will be updated automatically!
         </Text>
 
         <Dragger
@@ -100,7 +130,7 @@ const CsvModal = ({ open, onClose, onRefresh }) => {
             Click or drag CSV file to this area to import
           </p>
           <p className="ant-upload-hint" style={{ fontSize: '0.75rem', color: '#64748b' }}>
-            Supports single CSV files. Duplicates will update saved PTR/MRP automatically.
+            Supports CSV files. Duplicates will update saved PTR/MRP automatically.
           </p>
         </Dragger>
       </Card>

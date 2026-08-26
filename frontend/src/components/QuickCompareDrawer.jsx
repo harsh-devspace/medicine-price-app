@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Drawer, Card, Tag, Typography, Spin, Table, Alert, Space, Divider } from 'antd';
-import { TrophyFilled, ShopOutlined, ArrowDownOutlined } from '@ant-design/icons';
+import { Drawer, Tag, Typography, Spin, Table, Alert, Space } from 'antd';
+import { TrophyFilled, ShopOutlined, BankOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
 const { Title, Text } = Typography;
@@ -24,6 +24,7 @@ const QuickCompareDrawer = ({ open, onClose, selectedMedicine }) => {
         params: {
           product_name: selectedMedicine.product_name,
           contain: selectedMedicine.contain,
+          id: selectedMedicine.id,
         },
       });
       if (res.data.success) {
@@ -38,10 +39,21 @@ const QuickCompareDrawer = ({ open, onClose, selectedMedicine }) => {
 
   const columns = [
     {
+      title: 'Company',
+      dataIndex: 'company_name',
+      key: 'company_name',
+      width: 120,
+      render: (text) => (
+        <Tag color="blue" style={{ borderRadius: '8px' }}>
+          {text || 'Unknown'}
+        </Tag>
+      ),
+    },
+    {
       title: 'Agency / Supplier',
       dataIndex: 'agency',
       key: 'agency',
-      width: 150,
+      width: 140,
       render: (text, record) => (
         <Space wrap>
           <ShopOutlined style={{ color: '#0d9488' }} />
@@ -98,7 +110,7 @@ const QuickCompareDrawer = ({ open, onClose, selectedMedicine }) => {
     },
   ];
 
-  const drawerWidth = typeof window !== 'undefined' ? Math.min(600, window.innerWidth) : 600;
+  const drawerWidth = typeof window !== 'undefined' ? Math.min(650, window.innerWidth) : 650;
 
   return (
     <Drawer
@@ -108,7 +120,7 @@ const QuickCompareDrawer = ({ open, onClose, selectedMedicine }) => {
             Price Comparison
           </Title>
           <Text type="secondary" style={{ fontSize: '0.85rem' }}>
-            {selectedMedicine?.product_name} ({selectedMedicine?.contain})
+            {selectedMedicine?.product_name} {selectedMedicine?.company_name ? `(${selectedMedicine?.company_name})` : ''} • {selectedMedicine?.contain}
           </Text>
         </div>
       }
@@ -147,7 +159,7 @@ const QuickCompareDrawer = ({ open, onClose, selectedMedicine }) => {
           )}
 
           <Title level={5} style={{ marginBottom: '0.75rem', color: '#334155' }}>
-            Dealer Price List ({compareData.suppliers.length} Agencies)
+            Dealer Price List ({compareData.suppliers.length} Entries)
           </Title>
 
           <div style={{ overflowX: 'auto' }}>
@@ -157,7 +169,7 @@ const QuickCompareDrawer = ({ open, onClose, selectedMedicine }) => {
               rowKey="id"
               pagination={false}
               bordered
-              scroll={{ x: 440 }}
+              scroll={{ x: 520 }}
               rowClassName={(record) => (record.is_best_deal ? 'lowest-price-row' : '')}
             />
           </div>

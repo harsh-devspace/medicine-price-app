@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { ConfigProvider } from 'antd';
 import axios from 'axios';
 import App from './App';
+import { AuthProvider } from './context/AuthContext';
 import './index.css';
 
 // Set global API base URL for Render deployment
@@ -21,7 +22,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         },
       }}
     >
-      <App />
+      <AuthProvider>
+        <App />
+      </AuthProvider>
     </ConfigProvider>
   </React.StrictMode>
 );
