@@ -4,7 +4,11 @@ const app = require('./server');
 const { createClient } = require('@supabase/supabase-js');
 
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+const supabaseKey =
+  process.env.SUPABASE_SECRET_KEY ||
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  process.env.VITE_SUPABASE_ANON_KEY;
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -111,8 +115,8 @@ const runMultiUserTest = async () => {
         agency: 'ABC Pharma',
       }
     );
-    const medA = resAAdd.data.data;
-    console.log(`   ✅ User A Medicine Created (ID: ${medA?.id}, Product: "${medA?.product_name}", Company: "${medA?.company_name}")\n`);
+    const medA = resAAdd.data.data || resAAdd.data.existingRecord;
+    console.log(`   ✅ User A Medicine Loaded (ID: ${medA?.id}, Product: "${medA?.product_name}", Company: "${medA?.company_name}")\n`);
 
     // 4. User B adds medicine: Pan 40 (Company: Alkem)
     console.log('➕ 4. User B adding medicine: "Pan 40" (Company: "Alkem")...');
@@ -136,8 +140,8 @@ const runMultiUserTest = async () => {
         agency: 'City Pharma',
       }
     );
-    const medB = resBAdd.data.data;
-    console.log(`   ✅ User B Medicine Created (ID: ${medB?.id}, Product: "${medB?.product_name}", Company: "${medB?.company_name}")\n`);
+    const medB = resBAdd.data.data || resBAdd.data.existingRecord;
+    console.log(`   ✅ User B Medicine Loaded (ID: ${medB?.id}, Product: "${medB?.product_name}", Company: "${medB?.company_name}")\n`);
 
     // 5. Verification: User A fetch
     console.log('🔍 5. Verifying User A Data View:');
