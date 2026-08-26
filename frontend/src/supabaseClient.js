@@ -1,10 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co';
+// Supabase URL & Public Publishable Key for Frontend
+const supabaseUrl =
+  import.meta.env.VITE_SUPABASE_URL || 'https://sgsdtklsztjpqhrgrugb.supabase.co';
+
 const supabaseKey =
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
   import.meta.env.VITE_SUPABASE_ANON_KEY ||
-  'placeholder-key';
+  'sb_publishable_l_xsU9XR5AQTbv7mfNsvtw_3_qqMeSY';
 
 export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
